@@ -9,27 +9,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: cityfarm
-          POSTGRES_USER: cityfarm
-          POSTGRES_PASSWORD: cityfarm
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U cityfarm -d cityfarm"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Start PostgreSQL service
+        uses: docker://postgres:latest
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_NAME }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        with:
+          ports:
+            - "5432:5432"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -43,26 +38,11 @@ jobs:
       - name: Build Docker image
         run: docker build -t ayowilfred95/cityfarm:latest .
 
-      - name: Create network
-        run: docker network create cityfarm-network
-
-      - name: Run Postgres container
-        run: |
-          docker run -d --name postgres \
-            --network cityfarm-network \
-            -e POSTGRES_DB=cityfarm \
-            -e POSTGRES_USER=cityfarm \
-            -e POSTGRES_PASSWORD=cityfarm \
-            postgres:latest
-
       - name: Test application
         run: |
           docker run -d --name cityfarm-test \
-            --network cityfarm-network \
-            -e POSTGRES_HOST=postgres \
-            -e POSTGRES_DB=cityfarm \
-            -e POSTGRES_USER=cityfarm \
-            -e POSTGRES_PASSWORD=cityfarm \
+            --env-file .env \
+            -p 4000:4000 \
             ayowilfred95/cityfarm:latest
           docker logs -f cityfarm-test
 
@@ -71,9 +51,3 @@ jobs:
 
       - name: Log out from Docker Hub
         run: docker logout
-
-      - name: Cleanup
-        run: |
-          docker rm -f cityfarm-test
-          docker rm -f postgres
-          docker network rm cityfarm-network

@@ -13,16 +13,16 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_NAME }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: typeorm
+          POSTGRES_USER: typeorm
+          POSTGRES_PASSWORD: typeorm
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_NAME }}"
+          --health-cmd="pg_isready -U typeorm -d typeorm"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-        ports:
-          - 5432:5432
 
     steps:
       - name: Checkout repository
@@ -43,11 +43,26 @@ jobs:
       - name: Build Docker image
         run: docker build -t ayowilfred95/cityfarm:latest .
 
+      - name: Create network
+        run: docker network create cityfarm-network
+
+      - name: Run Postgres container
+        run: |
+          docker run -d --name postgres \
+            --network cityfarm-network \
+            -e POSTGRES_DB=typeorm \
+            -e POSTGRES_USER=typeorm \
+            -e POSTGRES_PASSWORD=typeorm \
+            postgres:latest
+
       - name: Test application
         run: |
           docker run -d --name cityfarm-test \
-            --env-file .env \
-            -p 4000:4000 \
+            --network cityfarm-network \
+            -e POSTGRES_HOST=postgres \
+            -e POSTGRES_DB=typeorm \
+            -e POSTGRES_USER=typeorm \
+            -e POSTGRES_PASSWORD=typeorm \
             ayowilfred95/cityfarm:latest
           docker logs -f cityfarm-test
 
@@ -56,3 +71,9 @@ jobs:
 
       - name: Log out from Docker Hub
         run: docker logout
+
+      - name: Cleanup
+        run: |
+          docker rm -f cityfarm-test
+          docker rm -f postgres
+          docker network rm cityfarm-network

@@ -8,7 +8,8 @@ RUN npm install
 
 COPY . .
 
-COPY .env .env 
+# Copy .env file if it exists
+COPY .env* ./
 
 RUN npm run build
 
@@ -19,11 +20,14 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /usr/src/app
 
-COPY . .
-
-COPY .env .env 
+COPY package*.json ./
 
 RUN npm install --omit=dev
+
+COPY . .
+
+# Copy .env file if it exists
+COPY --from=development /usr/src/app/.env* ./
 
 COPY --from=development /usr/src/app/dist ./dist
 

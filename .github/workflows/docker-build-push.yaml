@@ -64,7 +64,7 @@ jobs:
             -e POSTGRES_USER=typeorm \
             -e POSTGRES_PASSWORD=typeorm \
             ayowilfred95/cityfarm:latest
-          docker logs -f cityfarm-test
+          docker logs cityfarm-test
 
       - name: Push Docker image
         run: docker push ayowilfred95/cityfarm:latest

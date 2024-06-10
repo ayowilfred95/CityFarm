@@ -19,43 +19,61 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U user -d cityfarm"
+          --health-cmd="pg_isready -U cityfarm -d cityfarm"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Create .env file
-      run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
-      run: docker build -t ayowilfred95/cityfarm:latest .
+      - name: Build Docker image
+        run: docker build -t ayowilfred95/cityfarm:latest .
 
-    - name: Test application
-      run: |
-        docker run -d --name cityfarm-test \
-          --link postgres:postgres \
-          -e POSTGRES_HOST=postgres \
-          -e POSTGRES_DB=cityfarm \
-          -e POSTGRES_USER=cityfarm \
-          -e POSTGRES_PASSWORD=farm \
-          ayowilfred95/cityfarm:latest
-        docker logs -f cityfarm-test
+      - name: Create network
+        run: docker network create cityfarm-network
 
-    - name: Push Docker image
-      run: docker push ayowilfred95/cityfarm:latest
+      - name: Run Postgres container
+        run: |
+          docker run -d --name postgres \
+            --network cityfarm-network \
+            -e POSTGRES_DB=cityfarm \
+            -e POSTGRES_USER=cityfarm \
+            -e POSTGRES_PASSWORD=cityfarm \
+            postgres:latest
 
-    - name: Log out from Docker Hub
-      run: docker logout
+      - name: Test application
+        run: |
+          docker run -d --name cityfarm-test \
+            --network cityfarm-network \
+            -e POSTGRES_HOST=postgres \
+            -e POSTGRES_DB=cityfarm \
+            -e POSTGRES_USER=cityfarm \
+            -e POSTGRES_PASSWORD=cityfarm \
+            ayowilfred95/cityfarm:latest
+          docker logs -f cityfarm-test
+
+      - name: Push Docker image
+        run: docker push ayowilfred95/cityfarm:latest
+
+      - name: Log out from Docker Hub
+        run: docker logout
+
+      - name: Cleanup
+        run: |
+          docker rm -f cityfarm-test
+          docker rm -f postgres
+          docker network rm cityfarm-network

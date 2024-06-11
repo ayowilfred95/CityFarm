@@ -13,13 +13,13 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: typeorm
-          POSTGRES_USER: typeorm
-          POSTGRES_PASSWORD: typeorm
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres.wipieefqcpoqdtmjnnrq
+          POSTGRES_PASSWORD: axrriDPIlElhNHUb
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U typeorm -d typeorm"
+          --health-cmd="pg_isready -U postgres.wipieefqcpoqdtmjnnrq -d postgres"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -50,7 +50,7 @@ jobs:
         run: |
           docker run -d --name postgres \
             --network cityfarm-network \
-            -e POSTGRES_DB=typeorm \
+            -e POSTGRES_DB=postgres \
             -e POSTGRES_USER=typeorm \
             -e POSTGRES_PASSWORD=typeorm \
             postgres:latest
@@ -61,8 +61,8 @@ jobs:
             --network cityfarm-network \
             -e POSTGRES_HOST=postgres \
             -e POSTGRES_DB=typeorm \
-            -e POSTGRES_USER=typeorm \
-            -e POSTGRES_PASSWORD=typeorm \
+            -e POSTGRES_USER=postgres.wipieefqcpoqdtmjnnrq \
+            -e POSTGRES_PASSWORD=axrriDPIlElhNHUb \
             ayowilfred95/cityfarm:latest
           docker logs cityfarm-test
 

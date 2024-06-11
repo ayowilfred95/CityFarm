@@ -121,3 +121,6 @@ JWT_SECRET=your_jwt_secret
 6. Create a new Pull Request
 
 
+
+
+npm install @willsoto/nestjs-prometheus prom-client

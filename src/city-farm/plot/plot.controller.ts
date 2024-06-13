@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards,Get } from '@nestjs/common';
 import { PlotService } from './plot.service';
 import { RolesGuard } from '../greenhouse-owner/greenhouse-uthentication/roles.guard';
 import { JwtAuthGuard } from '../greenhouse-owner/greenhouse-uthentication/jwt-auth.guard';
@@ -16,4 +16,11 @@ export class PlotController {
     const ownerId = req.user.userId;
     return this.plotService.createPlot(ownerId, createPlotDto);
     }
+
+    @Get('get')
+    async getAllPolts() {
+        return this.plotService.getAllPlots()
+    }
+
+    
 }

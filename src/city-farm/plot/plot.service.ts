@@ -31,4 +31,12 @@ export class PlotService {
             throw error
         }
     }
+
+
+
+    // get all plots
+    async getAllPlots(): Promise<{plots:Plot[], message:string}> {
+        const plots = await this.plotRepository.find()
+        return {message:"All plots retrieved successfully", plots}
+    }
 }

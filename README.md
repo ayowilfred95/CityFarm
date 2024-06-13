@@ -124,3 +124,11 @@ JWT_SECRET=your_jwt_secret
 
 
 npm install @willsoto/nestjs-prometheus prom-client
+
+helm create cityfarm-metrics
+
+http://artifacthub.io
+
+helm dependency update
+
+helm install cityfarm-metrics .

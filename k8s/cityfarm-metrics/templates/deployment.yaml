@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cityfarm-metrics
+  name: cityfarm-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cityfarm-metrics
+  template:
+    metadata:
+      labels:
+        app: cityfarm-metrics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+      - image: ayowilfred95/cityfarm:latest
+        name: cityfarm
+        ports:
+        - containerPort: 4000
+
+

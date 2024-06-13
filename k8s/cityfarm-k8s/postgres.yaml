@@ -30,11 +30,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
+  labels:
+    app: postgres
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: postgres
   ports:
-  - port: 5432
+    - protocol: TCP
+      name: https
+      port: 5432
+      targetPort: 5432
    
 

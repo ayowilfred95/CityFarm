@@ -23,5 +23,16 @@ spec:
         name: cityfarm
         ports:
         - containerPort: 4000
+        env:
+        - name: POSTGRES_NAME
+          value: 'typeorm'
+        - name: POSTGRES_PASSWORD
+          value: 'typeorm'
+        - name: POSTGRES_USER
+          value: 'typeorm'
+        - name: POSTGRES_HOST
+          value: "192.168.64.9"
+        - name: POSTGRES_PORT
+          value: "30786"
 
 
